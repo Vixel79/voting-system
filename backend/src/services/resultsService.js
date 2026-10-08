@@ -1,5 +1,5 @@
 const { supabaseAdmin } = require('../config/supabase');
-const { computeResults, computeLiveAudienceResults } = require('../scoring/scoringService');
+const { computeResults } = require('../scoring/scoringService');
 const scoringConfig = require('../scoring/scoringConfig');
 
 async function fetchScoringInputs() {
@@ -22,35 +22,11 @@ async function fetchScoringInputs() {
 }
 
 async function getLiveResults() {
-  const { candidates, audienceVotes } = await fetchScoringInputs();
-
-  const { data: dbConfig } = await supabaseAdmin
-    .from('voting_configuration')
-    .select('*')
-    .eq('id', 1)
-    .single();
-
-  const config = dbConfig
-    ? {
-        FIRST_PLACE_POINTS: dbConfig.first_place_points,
-        SECOND_PLACE_POINTS: dbConfig.second_place_points,
-        THIRD_PLACE_POINTS: dbConfig.third_place_points,
-      }
-    : scoringConfig;
-
-  // Live view computes unweighted audience score only
-  return computeLiveAudienceResults({ candidates, audienceVotes, config });
-}
-
-// Used when voting ends or when snapshotting the final result
-async function computeFinalResults() {
   const { candidates, audienceVotes, judgeVotes } = await fetchScoringInputs();
 
-  const { data: dbConfig } = await supabaseAdmin
-    .from('voting_configuration')
-    .select('*')
-    .eq('id', 1)
-    .single();
+  // Pull live weight/points config from the DB so organizers can tune it
+  // without a redeploy, falling back to the code-level defaults.
+  const { data: dbConfig } = await supabaseAdmin.from('voting_configuration').select('*').eq('id', 1).single();
 
   const config = dbConfig
     ? {
@@ -66,6 +42,12 @@ async function computeFinalResults() {
   return computeResults({ candidates, audienceVotes, judgeVotes, config });
 }
 
+/**
+ * Persists a results snapshot. When `isFinal` is true, this is the
+ * immutable record the Stage Screen and Admin Dashboard fall back to
+ * after finalization — later votes (there shouldn't be any once voting
+ * is closed) never overwrite it.
+ */
 async function saveSnapshot(results, isFinal) {
   const { data, error } = await supabaseAdmin
     .from('results_snapshot')
@@ -88,10 +70,4 @@ async function getLatestFinalSnapshot() {
   return data;
 }
 
-module.exports = {
-  getLiveResults,
-  computeFinalResults,
-  saveSnapshot,
-  getLatestFinalSnapshot,
-  fetchScoringInputs,
-};
+module.exports = { getLiveResults, saveSnapshot, getLatestFinalSnapshot, fetchScoringInputs };

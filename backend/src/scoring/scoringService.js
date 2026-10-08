@@ -29,9 +29,11 @@ function aggregateRawPoints(votes, candidates, config) {
 
     for (const [candidateId, rank] of ranks) {
       const entry = perCandidate.get(candidateId);
+
       if (!entry) continue;
 
       entry.rawPoints += pointsForRank(rank, config);
+
       if (rank === 1) entry.firstPlaceCount += 1;
       if (rank === 2) entry.secondPlaceCount += 1;
       if (rank === 3) entry.thirdPlaceCount += 1;
@@ -50,48 +52,29 @@ function getTotalPoolPoints(aggregatedPoints) {
 
 function weightedPoints(rawPoints, totalPoolPoints, weight) {
   if (totalPoolPoints === 0) return 0;
-  return (rawPoints / totalPoolPoints) * weight * 100;
+
+  const poolShare = rawPoints / totalPoolPoints;
+
+  return poolShare * weight * 100;
 }
 
-// -------------------------------------------------------------
-// LIVE: Audience-Only, Unweighted Results
-// -------------------------------------------------------------
-function computeLiveAudienceResults({ candidates, audienceVotes, config = defaultConfig }) {
-  const audienceAgg = aggregateRawPoints(audienceVotes, candidates, config);
-  const audienceBallotCount = audienceVotes.length;
+function computeResults({
+  candidates,
+  audienceVotes,
+  judgeVotes,
+  config = defaultConfig,
+}) {
+  const audienceAgg = aggregateRawPoints(
+    audienceVotes,
+    candidates,
+    config
+  );
 
-  const teams = candidates.map((candidate) => {
-    const audience = audienceAgg.get(candidate.id);
-    return {
-      id: candidate.id,
-      name: candidate.name,
-      photo: candidate.photo || null,
-      audiencePoints: audience.rawPoints,
-      // Fallback display field so the frontend doesn't need field name changes
-      finalPoints: audience.rawPoints,
-      firstPlaceCount: audience.firstPlaceCount,
-      secondPlaceCount: audience.secondPlaceCount,
-      thirdPlaceCount: audience.thirdPlaceCount,
-    };
-  });
-
-  // Sort solely by audience points, tie-break by placement counts
-  const ranked = rankTeams(teams, ['firstPlaceCount', 'secondPlaceCount']);
-
-  return {
-    teams: ranked,
-    audienceBallotCount,
-    audiencePending: audienceBallotCount === 0,
-    computedAt: new Date().toISOString(),
-  };
-}
-
-// -------------------------------------------------------------
-// FINAL: Combined & Proportional Weighted Results
-// -------------------------------------------------------------
-function computeResults({ candidates, audienceVotes, judgeVotes, config = defaultConfig }) {
-  const audienceAgg = aggregateRawPoints(audienceVotes, candidates, config);
-  const judgesAgg = aggregateRawPoints(judgeVotes, candidates, config);
+  const judgesAgg = aggregateRawPoints(
+    judgeVotes,
+    candidates,
+    config
+  );
 
   const audienceBallotCount = audienceVotes.length;
   const judgeBallotCount = judgeVotes.length;
@@ -118,22 +101,30 @@ function computeResults({ candidates, audienceVotes, judgeVotes, config = defaul
       config.JUDGES_WEIGHT
     );
 
-    const finalPoints = weightedJudgePoints + weightedAudiencePoints;
+    const finalPoints =
+      weightedJudgePoints + weightedAudiencePoints;
 
     return {
       id: candidate.id,
       name: candidate.name,
       photo: candidate.photo || null,
+
       judgePoints,
       audiencePoints,
       finalPoints: round2(finalPoints),
-      firstPlaceCount: audience.firstPlaceCount + judges.firstPlaceCount,
-      secondPlaceCount: audience.secondPlaceCount + judges.secondPlaceCount,
-      thirdPlaceCount: audience.thirdPlaceCount + judges.thirdPlaceCount,
+
+      firstPlaceCount:
+        audience.firstPlaceCount + judges.firstPlaceCount,
+
+      secondPlaceCount:
+        audience.secondPlaceCount + judges.secondPlaceCount,
+
+      thirdPlaceCount:
+        audience.thirdPlaceCount + judges.thirdPlaceCount,
     };
   });
 
-  const ranked = rankTeams(teams, config.TIE_BREAK_ORDER);
+  const ranked = rankTeams(teams, config);
 
   return {
     teams: ranked,
@@ -145,15 +136,15 @@ function computeResults({ candidates, audienceVotes, judgeVotes, config = defaul
   };
 }
 
-function rankTeams(teams, tieBreakOrder = []) {
+function rankTeams(teams, config = defaultConfig) {
   const compare = (a, b) => {
     if (b.finalPoints !== a.finalPoints) {
       return b.finalPoints - a.finalPoints;
     }
 
-    for (const key of tieBreakOrder) {
-      if ((b[key] ?? 0) !== (a[key] ?? 0)) {
-        return (b[key] ?? 0) - (a[key] ?? 0);
+    for (const key of config.TIE_BREAK_ORDER) {
+      if (b[key] !== a[key]) {
+        return b[key] - a[key];
       }
     }
 
@@ -161,14 +152,18 @@ function rankTeams(teams, tieBreakOrder = []) {
   };
 
   const sorted = [...teams].sort(compare);
+
   let rank = 1;
 
   const result = sorted.map((team, index) => {
     if (index > 0) {
       const previous = sorted[index - 1];
+
       const stillTied =
         team.finalPoints === previous.finalPoints &&
-        tieBreakOrder.every((key) => team[key] === previous[key]);
+        config.TIE_BREAK_ORDER.every(
+          (key) => team[key] === previous[key]
+        );
 
       if (!stillTied) {
         rank = index + 1;
@@ -198,7 +193,6 @@ function round2(number) {
 
 module.exports = {
   computeResults,
-  computeLiveAudienceResults,
   rankTeams,
   aggregateRawPoints,
   pointsForRank,
