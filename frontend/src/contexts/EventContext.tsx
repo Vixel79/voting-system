@@ -25,7 +25,7 @@ import {
 '../data/event';
 
 
-const API_URL = 'https://museum-voting-backend-production.up.railway.app';
+const API_URL = 'https://voting-system-production-2ffd.up.railway.app';
 
 const ADMIN_HEADERS = {
   'Content-Type': 'application/json',
