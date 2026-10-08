@@ -1,0 +1,239 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Bebas Neue', sans-serif;
+  --font-serif: 'Libre Baskerville', serif;
+
+  --color-brand: #D4AF37;          /* Bright Gold */
+  --color-brand-dim: rgba(212, 175, 55, 0.25);
+  --color-brand-bright: #E3C874;   /* Soft Champagne */
+  
+  --color-bg-deep: #0B0B0B;        /* Deep Black */
+  --color-bg-base: #0B0B0B;        /* Deep Black */
+  --color-bg-elevated: #1E1208;    /* Charcoal Brown */
+  
+  --color-surface: #3B2F1F;        /* Dark Brown */
+  --color-surface-hover: #6A4F2B;  /* Bronze */
+  
+  --color-fg: #f1f3e7;             /* Cream */
+  --color-fg-muted: #EED8A7;       /* Gold Light */
+  --color-fg-subtle: #C9A24D;      /* Warm Golden Brown */
+  
+  --color-border-subtle: #3B2F1F;  /* Dark Brown */
+  --color-border-hover: #6A4F2B;   /* Bronze */
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  background-color: var(--color-bg-base);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  letter-spacing: 0.03em;
+}
+
+/* Secondary font for specific readable text elements */
+p, .text-secondary {
+  font-family: var(--font-serif);
+  letter-spacing: normal;
+}
+
+*:not(input):not(textarea):not(button):focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* =========================================
+   CINEMATIC BACKGROUND SYSTEM (MUSEUM)
+   ========================================= */
+
+.tech-canvas {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--color-bg-deep);
+  overflow-x: hidden;
+  z-index: 1;
+}
+
+/* Animated Radiant Golden Glow in Center */
+.tech-canvas::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.25) 0%, rgba(30, 18, 8, 0.6) 40%, rgba(11, 11, 11, 1) 65%);
+  animation: pulse-glow 8s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-glow {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.05); opacity: 1; }
+}
+
+/* Layer 1: Canvas/Paper Texture */
+.tech-canvas::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Layer 3: Warm Museum Spotlights (Optional slow motion glow) */
+.ambient-blobs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ambient-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(150px);
+  animation: breathe 8s ease-in-out infinite alternate;
+}
+
+.blob-primary {
+  width: 600px;
+  height: 600px;
+  background: #C9A24D;
+  opacity: 0.08;
+}
+
+@keyframes breathe {
+  0% { transform: scale(1); opacity: 0.05; }
+  100% { transform: scale(1.2); opacity: 0.12; }
+}
+
+/* =========================================
+   COMPONENTS & UTILITIES
+   ========================================= */
+
+/* Premium Art Frame (Replacing Glass Panel) */
+.glass-panel {
+  background: linear-gradient(135deg, rgba(30, 18, 8, 0.9) 0%, rgba(11, 11, 11, 0.95) 100%);
+  border: 1px solid var(--color-surface);
+  border-radius: 4px;
+  box-shadow: 
+    0 10px 30px -5px rgba(0, 0, 0, 0.9),
+    0 0 2px 0 rgba(199,150,58,0.15) inset;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid rgba(212, 175, 55, 0.05);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.glass-panel:hover {
+  border-color: var(--color-surface-hover);
+  box-shadow: 
+    0 15px 40px -5px rgba(0, 0, 0, 1),
+    0 0 3px 0 rgba(199,150,58,0.3) inset,
+    0 0 50px -15px var(--color-brand-dim);
+  transform: translateY(-2px);
+}
+
+/* Text Gradients (Gold Foil Effect) */
+.text-gradient {
+  background: linear-gradient(180deg, #f1f3e7 0%, #EED8A7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-brand {
+  background: linear-gradient(to bottom right, #EED8A7 0%, #D4AF37 40%, #C7963A 60%, #6A4F2B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+}
+
+/* Premium Button */
+.btn-premium {
+  position: relative;
+  background: linear-gradient(to bottom, #D4AF37 0%, #C7963A 100%);
+  color: #0B0B0B;
+  font-family: var(--font-sans);
+  letter-spacing: 0.05em;
+  font-size: 1.1em;
+  border-radius: 2px;
+  border: 1px solid #E3C874;
+  overflow: hidden;
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+}
+
+.btn-premium:hover {
+  background: linear-gradient(to bottom, #E3C874 0%, #D4AF37 100%);
+  box-shadow: 
+    0 6px 20px rgba(199, 150, 58, 0.5),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
+  transform: translateY(-1px);
+}
+
+.btn-premium:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-brand);
+  font-family: var(--font-sans);
+  letter-spacing: 0.05em;
+  font-size: 1.1em;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+}
+
+.btn-ghost:hover {
+  background: rgba(212, 175, 55, 0.08);
+  color: var(--color-brand-bright);
+}
+
+/* Animations */
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+@keyframes led-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.led-blink {
+  animation: led-blink 1.4s cubic-bezier(0.23, 1, 0.32, 1) infinite;
+}

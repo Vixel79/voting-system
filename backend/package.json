@@ -1,0 +1,39 @@
+{
+  "name": "the-museum-voting",
+  "version": "1.0.0",
+  "description": "Live Ballon d'Or style voting system for The Museum event",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest tests/unit tests/integration --runInBand",
+    "test:unit": "jest tests/unit",
+    "test:integration": "jest tests/integration --runInBand",
+    "test:concurrency": "node tests/concurrency/raceCondition.test.js",
+    "load:test": "node tests/load/loadTest.js",
+    "migrate": "node supabase/migrations/run.js",
+    "seed": "node supabase/seed/run.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "cookie-parser": "^1.4.6",
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.4.0",
+    "dotenv": "^16.4.5",
+    "uuid": "^9.0.1",
+    "compression": "^1.7.4",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0",
+    "nodemon": "^3.1.4",
+    "autocannon": "^7.15.0"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}
